@@ -42,13 +42,13 @@ print(f"Número de pacientes teste: {test_data['stay_id'].nunique()}")
 #env = SepsisEnv(sample_data)
 
 # 9. Ambiente offline
-env = SepsisEnv(train_data)
+#env = SepsisEnv(train_data)
 # Salvar
-with open("output/sepsis_env.pkl", "wb") as f:
-    pickle.dump(env, f)
+#with open("output/sepsis_env.pkl", "wb") as f:
+#    pickle.dump(env, f)
 # Carregar depois
-#with open("sepsis_env.pkl", "rb") as f:
-#    env_loaded = pickle.load(f)
+with open("output/sepsis_env.pkl", "rb") as f:
+    env = pickle.load(f)
 
 # 10. Agente
 agent = DDDQNAgent(state_dim=env.state_dim, action_dim=env.action_dim, lr=1e-4, replay_buffer=env.get_buffer())
@@ -59,12 +59,12 @@ agent.train(episodes=200)
 
 # 12. Avaliação
 print("📊 Avaliando agente...")
-env_test = SepsisEnv(test_data)
+#env_test = SepsisEnv(test_data)
 # Salvar
-with open("output/sepsis_env_test.pkl", "wb") as f:
-    pickle.dump(env_test, f)
+#with open("output/sepsis_env_test.pkl", "wb") as f:
+#    pickle.dump(env_test, f)
 # Carregar depois
-#with open("sepsis_env.pkl", "rb") as f:
-#    env_loaded = pickle.load(f)
+with open("output/sepsis_env_test.pkl", "rb") as f:
+    env_test = pickle.load(f)
 
 agent.evaluate(env_test)

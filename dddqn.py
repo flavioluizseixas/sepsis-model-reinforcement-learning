@@ -88,14 +88,30 @@ class DDDQNAgent:
                 print(f"🎯 Episódio {ep} | Loss: {loss.item():.4f}")
 
     def evaluate(self, env):
-        total_reward = 0
+        self.q_net.eval()  # garante que dropout/batchnorm (se existirem) estão em modo avaliação
         transitions = env.get_buffer()
-        state_cols = env.state_cols
+        total_q = 0.0
+        count = 0
 
-        for s, a, r, s_next in transitions:
+        for s, _, _, _ in transitions:
             state = torch.tensor(s, dtype=torch.float32).unsqueeze(0).to(self.device)
-            q_values = self.q_net(state)
-            chosen_action = q_values.argmax().item()
-            total_reward += r if chosen_action == a else 0  # simples: acerto vs política
+            with torch.no_grad():
+                q_values = self.q_net(state)
+                chosen_action = q_values.argmax().item()
+                q_val = q_values[0, chosen_action].item()
+                total_q += q_val
+                count += 1
 
-        print(f"✅ Avaliação: total de acertos (recompensa condicional): {total_reward}")
+        avg_q = total_q / count if count > 0 else 0.0
+        print(f"✅ Avaliação: valor médio Q das ações escolhidas: {avg_q:.4f}")
+
+        match_count = 0
+        for s, a, _, _ in transitions:
+            state = torch.tensor(s, dtype=torch.float32).unsqueeze(0).to(self.device)
+            with torch.no_grad():
+                q_values = self.q_net(state)
+                chosen_action = q_values.argmax().item()
+                if chosen_action == a:
+                    match_count += 1
+        acc = match_count / len(transitions)
+        print(f"🧠 Similaridade com histórico (acurácia supervisionada): {acc:.2%}")
