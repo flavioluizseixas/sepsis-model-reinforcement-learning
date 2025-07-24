@@ -1,4 +1,4 @@
 backup/
 output/*.pkl
-.vsocde/
+.vscode/
 __pycache__/
